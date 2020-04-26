@@ -1,5 +1,6 @@
 package com.cognizant.fse.projectmgmt.controller;
 
+import com.cognizant.fse.projectmgmt.model.ParentTaskTbl;
 import com.cognizant.fse.projectmgmt.model.TaskTbl;
 import com.cognizant.fse.projectmgmt.service.TaskService;
 import com.cognizant.fse.projectmgmt.vo.Task;
@@ -35,13 +36,12 @@ public class TaskController {
 	@PutMapping("/tasks")
 	public ResponseEntity<String> updateTask(@RequestBody Task task) {		
 
-		taskService.addUpdateTask(task)
-		;
+		taskService.addUpdateTask(task);
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 
 	@DeleteMapping(path="/tasks/{taskId}")
-	public ResponseEntity<String> deleteBook(@PathVariable("taskId") int taskId) {
+	public ResponseEntity<String> deleteTask(@PathVariable("taskId") int taskId) {
 
 		taskService.deleteTask(taskId);
 		return new ResponseEntity<String>(HttpStatus.OK);
@@ -54,6 +54,31 @@ public class TaskController {
 		System.out.println("**TaskList***"+taskList.size());
 		
 		return new ResponseEntity<List>(taskList, HttpStatus.OK);
+	}
+
+	@GetMapping("/tasks/parenttasks")
+	public ResponseEntity<List> getAllParentTask() {
+
+		List<ParentTaskTbl> parentTaskList = taskService.getParentTask();
+		System.out.println("**ParentTaskList***"+parentTaskList.size());
+
+		return new ResponseEntity<List>(parentTaskList, HttpStatus.OK);
+	}
+
+	@GetMapping("/tasks/count/{projectId}")
+	public ResponseEntity<Integer> getTaskCount(@PathVariable("projectId") long projectId) {
+		int taskCount = taskService.countTask(projectId);
+		System.out.println("**taskCount***"+taskCount);
+
+		return new ResponseEntity<Integer>(Integer.valueOf(taskCount), HttpStatus.OK);
+	}
+
+	@GetMapping("/tasks/complete")
+	public ResponseEntity<Integer> getCompleteTaskCount() {
+		int taskCount = taskService.countCompleteTask("Complete");
+		System.out.println("**taskCount***"+taskCount);
+
+		return new ResponseEntity<Integer>(Integer.valueOf(taskCount), HttpStatus.OK);
 	}
 	
 	@GetMapping("/tasks/{taskId}")
@@ -70,6 +95,10 @@ public class TaskController {
 			taskObj.setPriority(task.getPriority());
 			taskObj.setStartDate(task.getStartDate().toString());
 			taskObj.setEndDate(task.getEndDate().toString());
+			taskObj.setManager(task.getUserTbl().getLastName()+","+task.getUserTbl().getFirstName());
+			taskObj.setManagerId(task.getUserTbl().getUserId());
+			taskObj.setProject(task.getProjectTbl().getProjectName());
+			taskObj.setProjectId(task.getProjectTbl().getProjectId());
 		}		
 		
 		return new ResponseEntity<Task>(taskObj, HttpStatus.OK);

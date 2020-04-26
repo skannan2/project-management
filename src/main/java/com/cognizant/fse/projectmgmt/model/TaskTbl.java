@@ -3,6 +3,9 @@ package com.cognizant.fse.projectmgmt.model;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Sanjay
@@ -22,10 +25,17 @@ public class TaskTbl implements Serializable {
 	LocalDate endDate;
 	@Column
 	int priority;
-	@ManyToOne
-	private ProjectTbl projectTbl;
+
+	@Column
+	String status;
+
 	@ManyToOne
 	private ParentTaskTbl parentTaskTbl;
+
+	@OneToOne
+	private UserTbl userTbl;
+	@OneToOne
+	private ProjectTbl projectTbl;
 
 	public Long getTaskId() {
 		return taskId;
@@ -67,14 +77,6 @@ public class TaskTbl implements Serializable {
 		this.priority = priority;
 	}
 
-	public ProjectTbl getProjectTbl() {
-		return projectTbl;
-	}
-
-	public void setProjectTbl(ProjectTbl projectTbl) {
-		this.projectTbl = projectTbl;
-	}
-
 	public ParentTaskTbl getParentTaskTbl() {
 		return parentTaskTbl;
 	}
@@ -83,4 +85,40 @@ public class TaskTbl implements Serializable {
 		this.parentTaskTbl = parentTaskTbl;
 	}
 
+	public UserTbl getUserTbl() {
+		return userTbl;
+	}
+
+	public void setUserTbl(UserTbl userTbl) {
+		this.userTbl = userTbl;
+	}
+
+	public ProjectTbl getProjectTbl() {
+		return projectTbl;
+	}
+
+	public void setProjectTbl(ProjectTbl projectTbl) {
+		this.projectTbl = projectTbl;
+	}
+
+	public String getStatus() {
+		return status;
+	}
+
+	public void setStatus(String status) {
+		this.status = status;
+	}
+
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		TaskTbl taskTbl = (TaskTbl) o;
+		return taskId.equals(taskTbl.taskId);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(taskId);
+	}
 }

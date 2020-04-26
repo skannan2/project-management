@@ -1,6 +1,9 @@
 package com.cognizant.fse.projectmgmt.service;
 
+import com.cognizant.fse.projectmgmt.dao.ProjectDaoInterface;
 import com.cognizant.fse.projectmgmt.dao.UserDaoInterface;
+import com.cognizant.fse.projectmgmt.model.ProjectTbl;
+import com.cognizant.fse.projectmgmt.model.UserTbl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,64 +28,88 @@ public class TaskService {
 
     private TaskDaoInterface taskDao;
     private ParentTaskDaoInterface parentTaskDao;
+    private ProjectDaoInterface projectDao;
+    private UserDaoInterface userDao;
 
 	@Autowired
-	public TaskService(TaskDaoInterface taskDao, ParentTaskDaoInterface parentTaskDao) {
+	public TaskService(TaskDaoInterface taskDao, ParentTaskDaoInterface parentTaskDao,
+					   ProjectDaoInterface projectDao, UserDaoInterface userDao) {
 		this.taskDao = taskDao;
 		this.parentTaskDao = parentTaskDao;
+		this.projectDao = projectDao;
+		this.userDao = userDao;
 	}
 
 	@Transactional
     public String addUpdateTask(Task task) {
-		long parentTaskId = task.getParentTaskId();
-		Optional<ParentTaskTbl> parentTaskObj = null;
 		ParentTaskTbl parentTaskTbl = null;
-		if (parentTaskId > 0) {
-			parentTaskObj = parentTaskDao.findById(parentTaskId);
-			parentTaskTbl = parentTaskObj.get();
-			parentTaskTbl.setParentTaskId(parentTaskId);
-
-		} else {
+		boolean isParentTask = task.isParentTaskSelected();
+		System.out.println("***isParentTask***"+isParentTask);
+		if(isParentTask) {
+			String parentTaskName = task.getTask();
 			parentTaskTbl = new ParentTaskTbl();
+			parentTaskTbl.setParentTask(parentTaskName);
+
+			parentTaskDao.save(parentTaskTbl);
+		} else {
+			long parentTaskId = task.getParentTaskId();
+			Optional<ParentTaskTbl> parentTaskObj = null;
+
+			if (parentTaskId > 0) {
+				parentTaskObj = parentTaskDao.findById(parentTaskId);
+				parentTaskTbl = parentTaskObj.get();
+				parentTaskTbl.setParentTaskId(parentTaskId);
+
+			} else {
+				parentTaskTbl = new ParentTaskTbl();
+			}
+
+			parentTaskTbl.setParentTask(task.getParentTask());
+			parentTaskDao.save(parentTaskTbl);
+
+			long taskId = task.getTaskId();
+			Optional<TaskTbl> taskObj = null;
+			TaskTbl taskTbl = null;
+			if (taskId > 0) {
+				taskObj = taskDao.findById(taskId);
+				taskTbl = taskObj.get();
+				taskTbl.setTaskId(taskId);
+			} else {
+				taskTbl = new TaskTbl();
+				taskTbl.setStatus("Created");
+			}
+
+			System.out.println("***taskId**" + task.getTaskId());
+			System.out.println("***task Name**" + task.getTask());
+			System.out.println("***parent task Id**" + task.getParentTaskId());
+			System.out.println("***parent task Name**" + task.getParentTask());
+			System.out.println("***Priority**" + task.getPriority());
+			System.out.println("***Start Date**" + task.getStartDate());
+			System.out.println("***End date**" + task.getEndDate());
+
+			taskTbl.setTask(task.getTask());
+			//taskTbl.setParentTaskId(parentTaskId);
+			taskTbl.setPriority(task.getPriority());
+
+			DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
+			LocalDate startdate = LocalDate.parse(task.getStartDate(), formatter);
+
+			taskTbl.setStartDate(startdate);
+			LocalDate enddate = LocalDate.parse(task.getEndDate(), formatter);
+			taskTbl.setEndDate(enddate);
+			taskTbl.setParentTaskTbl(parentTaskTbl);
+
+			long projectId = task.getProjectId();
+			ProjectTbl projectTbl = projectDao.findById(projectId).get();
+			taskTbl.setProjectTbl(projectTbl);
+
+			long userId = task.getManagerId();
+			UserTbl userTbl = userDao.findById(userId).get();
+			taskTbl.setUserTbl(userTbl);
+
+			taskDao.save(taskTbl);
 		}
 
-		parentTaskTbl.setParentTask(task.getParentTask());
-		parentTaskDao.save(parentTaskTbl);
-
-
-		long taskId = task.getTaskId();
-		Optional<TaskTbl> taskObj = null;
-		TaskTbl taskTbl = null;
-		if (taskId > 0) {			
-			taskObj = taskDao.findById(taskId);
-			taskTbl = taskObj.get();
-			taskTbl.setTaskId(taskId);
-		} else {			
-			taskTbl = new TaskTbl();
-		} 
-				
-		System.out.println("***taskId**"+task.getTaskId());
-		System.out.println("***task Name**"+task.getTask());
-		System.out.println("***parent task Id**"+task.getParentTaskId());
-		System.out.println("***parent task Name**"+task.getParentTask());
-		System.out.println("***Priority**"+task.getPriority());
-		System.out.println("***Start Date**"+task.getStartDate());
-		System.out.println("***End date**"+task.getEndDate());
-		
-		taskTbl.setTask(task.getTask());
-		//taskTbl.setParentTaskId(parentTaskId);
-		taskTbl.setPriority(task.getPriority());
-				
-		DateTimeFormatter formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy");
-		LocalDate startdate = LocalDate.parse(task.getStartDate(), formatter);
-		 
-		taskTbl.setStartDate(startdate);
-		LocalDate enddate = LocalDate.parse(task.getEndDate(), formatter);
-		taskTbl.setEndDate(enddate);
-		taskTbl.setParentTaskTbl(parentTaskTbl);
-		
-		taskDao.save(taskTbl);
-		
 		return "Successful";
     }
 	
@@ -93,6 +120,13 @@ public class TaskService {
 		
 		return taskList;
     }
+
+	@Transactional
+	public List<ParentTaskTbl> getParentTask() {
+		List<ParentTaskTbl> parentTaskList = (List<ParentTaskTbl>) parentTaskDao.findAll();
+
+		return parentTaskList;
+	}
 	
 	@Transactional
     public TaskTbl getTaskById(long taskId) {
@@ -104,9 +138,18 @@ public class TaskService {
 	
 	@Transactional
     public void deleteTask(long taskId) {
-		
 		taskDao.deleteById(taskId);
     }
+
+	@Transactional
+	public int countTask(long projectId) {
+		return taskDao.countTask(projectId);
+	}
+
+	@Transactional
+	public int countCompleteTask(String status) {
+		return taskDao.countCompleteTask(status);
+	}
 			
 		
 }

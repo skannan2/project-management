@@ -1,13 +1,16 @@
 package com.cognizant.fse.projectmgmt.controller;
 
 import com.cognizant.fse.projectmgmt.model.ProjectTbl;
+import com.cognizant.fse.projectmgmt.model.UserTbl;
 import com.cognizant.fse.projectmgmt.service.ProjectService;
+import com.cognizant.fse.projectmgmt.service.TaskService;
 import com.cognizant.fse.projectmgmt.vo.Project;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 
@@ -20,10 +23,13 @@ import java.util.List;
 public class ProjectController {
 
 	private ProjectService projectService;
+	private TaskService taskService;
 
 	@Autowired
-	public void ProjectController(ProjectService projectService) {
+	public void ProjectController(ProjectService projectService,
+								  TaskService taskService) {
 		this.projectService = projectService;
+		this.taskService = taskService;
 	}
 	
 	@PostMapping(path = "/projects", consumes = "application/json")
@@ -51,15 +57,49 @@ public class ProjectController {
 	public ResponseEntity<List> getProjects() {
 		
 		List<ProjectTbl> projectList = projectService.getProject();
-		
-		return new ResponseEntity<List>(projectList, HttpStatus.OK);
+		List<Project> projectObjList = transformData(projectList);
+
+		return new ResponseEntity<List>(projectObjList, HttpStatus.OK);
 	}
 
 	@GetMapping("/projects/search/{search}")
-	public ResponseEntity<List> searchUser(@PathVariable("search") String searchString) {
+	public ResponseEntity<List> searchProject(@PathVariable("search") String searchString) {
 
 		List<ProjectTbl> projectList = projectService.findProject(searchString);
+		List<Project> projectObjList = transformData(projectList);
 
-		return new ResponseEntity<List>(projectList, HttpStatus.OK);
+		return new ResponseEntity<List>(projectObjList, HttpStatus.OK);
+	}
+
+	@GetMapping("/projects/sort/{sortString}")
+	public ResponseEntity<List> sortProject(@PathVariable("sortString") String sortString) {
+
+		List<ProjectTbl> projectList = projectService.sortProject(sortString);
+		List<Project> projectObjList = transformData(projectList);
+
+		return new ResponseEntity<List>(projectObjList, HttpStatus.OK);
+	}
+
+	private List<Project> transformData(List<ProjectTbl> projectTblList) {
+		List<Project> projectObjList = new ArrayList<>();
+		for (ProjectTbl projectTbl : projectTblList) {
+			Project project = new Project();
+			project.setProjectId(projectTbl.getProjectId());
+			project.setProjectName(projectTbl.getProjectName());
+			project.setPriority(projectTbl.getPriority());
+			project.setStartDate(projectTbl.getStartDate().toString());
+			project.setEndDate(projectTbl.getEndDate().toString());
+			project.setManagerId(projectTbl.getUserTbl().getUserId());
+			project.setManager(projectTbl.getUserTbl().getLastName()+","+projectTbl.getUserTbl().getFirstName());
+
+			int taskCount = taskService.countTask(projectTbl.getProjectId());
+			project.setTaskCount(taskCount);
+			int taskCompleteCount = taskService.countCompleteTask("Complete");
+			project.setCompleteCount(taskCompleteCount);
+
+			projectObjList.add(project);
+		}
+
+		return projectObjList;
 	}
 }

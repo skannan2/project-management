@@ -18,6 +18,12 @@ public class Task implements Serializable {
     int priority;
     String startDate;
     String endDate;
+    boolean parentTaskSelected;
+    String project;
+    long projectId;
+    String manager;
+    long managerId;
+    String status;
 
     public Task() {
 
@@ -78,4 +84,54 @@ public class Task implements Serializable {
     public void setEndDate(String endDate) {
         this.endDate = endDate;
     }
+
+    public boolean isParentTaskSelected() {
+        return parentTaskSelected;
+    }
+
+    public void setParentTaskSelected(boolean parentTaskSelected) {
+        this.parentTaskSelected = parentTaskSelected;
+    }
+
+    public String getProject() {
+        return project;
+    }
+
+    public void setProject(String project) {
+        this.project = project;
+    }
+
+    public long getProjectId() {
+        return projectId;
+    }
+
+    public void setProjectId(long projectId) {
+        this.projectId = projectId;
+    }
+
+    public String getManager() {
+        return manager;
+    }
+
+    public void setManager(String manager) {
+        this.manager = manager;
+    }
+
+    public long getManagerId() {
+        return managerId;
+    }
+
+    public void setManagerId(long managerId) {
+        this.managerId = managerId;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+
 }

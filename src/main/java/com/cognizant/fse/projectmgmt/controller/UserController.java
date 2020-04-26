@@ -63,4 +63,12 @@ public class UserController {
 
 		return new ResponseEntity<List>(userList, HttpStatus.OK);
 	}
+
+	@GetMapping("/users/sort/{sortString}")
+	public ResponseEntity<List> sortUser(@PathVariable("sortString") String sortString) {
+
+		List<UserTbl> userList = userService.sortUser(sortString);
+
+		return new ResponseEntity<List>(userList, HttpStatus.OK);
+	}
 }

@@ -3,6 +3,9 @@ package com.cognizant.fse.projectmgmt.model;
 import javax.persistence.*;
 import java.io.Serializable;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Objects;
 
 /**
  * Created by Sanjay
@@ -23,6 +26,10 @@ public class ProjectTbl implements Serializable {
 	LocalDate endDate;
 	@Column
 	int priority;
+
+	@OneToOne
+	private UserTbl userTbl;
+
 
 	public Long getProjectId() {
 		return projectId;
@@ -64,6 +71,25 @@ public class ProjectTbl implements Serializable {
 		this.priority = priority;
 	}
 
+	public UserTbl getUserTbl() {
+		return userTbl;
+	}
+
+	public void setUserTbl(UserTbl userTbl) {
+		this.userTbl = userTbl;
+	}
 
 
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		if (o == null || getClass() != o.getClass()) return false;
+		ProjectTbl that = (ProjectTbl) o;
+		return projectId.equals(that.projectId);
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(projectId);
+	}
 }

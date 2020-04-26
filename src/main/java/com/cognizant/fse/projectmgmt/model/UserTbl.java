@@ -2,6 +2,7 @@ package com.cognizant.fse.projectmgmt.model;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Objects;
 
 /**
  * Created by Sanjay
@@ -20,10 +21,7 @@ public class UserTbl implements Serializable {
 	String firstName;
 	@Column
 	String lastName;
-	@ManyToOne
-	private ProjectTbl projectTbl;
-	@ManyToOne
-	private TaskTbl taskTbl;
+
 
 	public Long getUserId() {
 		return userId;
@@ -57,20 +55,21 @@ public class UserTbl implements Serializable {
 		this.lastName = lastName;
 	}
 
-	public ProjectTbl getProjectTbl() {
-		return projectTbl;
+	@Override
+	public boolean equals(Object o) {
+		if (this == o) return true;
+		System.out.println("***Inside equals***");
+		if (o == null || getClass() != o.getClass()) {
+			System.out.println("***Inside equals return false***");
+			return false;
+		}
+		UserTbl userTbl = (UserTbl) o;
+		System.out.println("***Inside equals userId***"+userTbl.getUserId());
+		return userId.equals(userTbl.userId);
 	}
 
-	public void setProjectTbl(ProjectTbl projectTbl) {
-		this.projectTbl = projectTbl;
+	@Override
+	public int hashCode() {
+		return Objects.hash(userId);
 	}
-
-	public TaskTbl getTaskTbl() {
-		return taskTbl;
-	}
-
-	public void setTaskTbl(TaskTbl taskTbl) {
-		this.taskTbl = taskTbl;
-	}
-
 }

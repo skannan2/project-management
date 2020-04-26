@@ -4,6 +4,7 @@ import com.cognizant.fse.projectmgmt.dao.UserDaoInterface;
 import com.cognizant.fse.projectmgmt.model.UserTbl;
 import com.cognizant.fse.projectmgmt.vo.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -75,6 +76,12 @@ public class UserService {
 	public List<UserTbl> findUser(String searchString) {
 
 		return userDao.findUserBySearchString(searchString);
+	}
+
+	@Transactional
+	public List<UserTbl> sortUser(String sortField) {
+
+		return (List<UserTbl>)userDao.findAll(Sort.by(""+sortField+""));
 	}
 
 
