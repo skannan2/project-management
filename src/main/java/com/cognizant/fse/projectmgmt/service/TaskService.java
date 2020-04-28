@@ -5,6 +5,7 @@ import com.cognizant.fse.projectmgmt.dao.UserDaoInterface;
 import com.cognizant.fse.projectmgmt.model.ProjectTbl;
 import com.cognizant.fse.projectmgmt.model.UserTbl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,6 +87,10 @@ public class TaskService {
 			System.out.println("***Priority**" + task.getPriority());
 			System.out.println("***Start Date**" + task.getStartDate());
 			System.out.println("***End date**" + task.getEndDate());
+			System.out.println("***Project ID**" + task.getProjectId());
+			System.out.println("***Project Name**" + task.getProject());
+			System.out.println("***Manager ID**" + task.getManagerId());
+			System.out.println("***Manager**" + task.getManager());
 
 			taskTbl.setTask(task.getTask());
 			//taskTbl.setParentTaskId(parentTaskId);
@@ -135,10 +140,17 @@ public class TaskService {
 		
 		return task;
     }
+
+	@Transactional
+	public List<TaskTbl> getTaskByProjectId(long projectId) {
+		List<TaskTbl> taskList = (List<TaskTbl>) taskDao.findTaskByProjectId(projectId);
+
+		return taskList;
+	}
 	
 	@Transactional
     public void deleteTask(long taskId) {
-		taskDao.deleteById(taskId);
+		taskDao.completeTask(taskId);
     }
 
 	@Transactional
@@ -150,6 +162,11 @@ public class TaskService {
 	public int countCompleteTask(String status) {
 		return taskDao.countCompleteTask(status);
 	}
-			
+
+	@Transactional
+	public List<TaskTbl> sortProject(String sortField) {
+
+		return (List<TaskTbl>)taskDao.findAll(Sort.by(""+sortField+""));
+	}
 		
 }

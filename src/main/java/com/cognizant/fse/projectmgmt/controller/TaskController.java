@@ -1,8 +1,10 @@
 package com.cognizant.fse.projectmgmt.controller;
 
 import com.cognizant.fse.projectmgmt.model.ParentTaskTbl;
+import com.cognizant.fse.projectmgmt.model.ProjectTbl;
 import com.cognizant.fse.projectmgmt.model.TaskTbl;
 import com.cognizant.fse.projectmgmt.service.TaskService;
+import com.cognizant.fse.projectmgmt.vo.Project;
 import com.cognizant.fse.projectmgmt.vo.Task;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -80,6 +82,14 @@ public class TaskController {
 
 		return new ResponseEntity<Integer>(Integer.valueOf(taskCount), HttpStatus.OK);
 	}
+
+	@GetMapping("/tasks/sort/{sortString}")
+	public ResponseEntity<List> sortTask(@PathVariable("sortString") String sortString) {
+
+		List<TaskTbl> taskList = taskService.sortProject(sortString);
+
+		return new ResponseEntity<List>(taskList, HttpStatus.OK);
+	}
 	
 	@GetMapping("/tasks/{taskId}")
 	public ResponseEntity<Task> getTask(@PathVariable("taskId") int taskId) {
@@ -102,5 +112,14 @@ public class TaskController {
 		}		
 		
 		return new ResponseEntity<Task>(taskObj, HttpStatus.OK);
+	}
+
+	@GetMapping("/tasks/project/{projectId}")
+	public ResponseEntity<List> getTaskByProjectId(@PathVariable("projectId") long projectId) {
+
+		List<TaskTbl> taskList = taskService.getTaskByProjectId(projectId);
+		System.out.println("**TaskList***"+taskList.size());
+
+		return new ResponseEntity<List>(taskList, HttpStatus.OK);
 	}
 }
