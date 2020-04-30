@@ -86,7 +86,7 @@ public class TaskController {
 	@GetMapping("/tasks/sort/{sortString}")
 	public ResponseEntity<List> sortTask(@PathVariable("sortString") String sortString) {
 
-		List<TaskTbl> taskList = taskService.sortProject(sortString);
+		List<TaskTbl> taskList = taskService.sortTask(sortString);
 
 		return new ResponseEntity<List>(taskList, HttpStatus.OK);
 	}

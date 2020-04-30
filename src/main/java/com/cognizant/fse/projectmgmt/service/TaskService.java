@@ -164,7 +164,7 @@ public class TaskService {
 	}
 
 	@Transactional
-	public List<TaskTbl> sortProject(String sortField) {
+	public List<TaskTbl> sortTask(String sortField) {
 
 		return (List<TaskTbl>)taskDao.findAll(Sort.by(""+sortField+""));
 	}
