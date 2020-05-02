@@ -1,5 +1,8 @@
 package com.cognizant.fse.projectmgmt.controller;
 
+import com.cognizant.fse.projectmgmt.exception.AppException;
+import com.cognizant.fse.projectmgmt.exception.ParentTaskNotFoundException;
+import com.cognizant.fse.projectmgmt.exception.UserNotFoundException;
 import com.cognizant.fse.projectmgmt.model.ParentTaskTbl;
 import com.cognizant.fse.projectmgmt.model.ProjectTbl;
 import com.cognizant.fse.projectmgmt.model.TaskTbl;
@@ -21,105 +24,153 @@ import java.util.List;
 @RequestMapping("/project-management")
 public class TaskController {
 
-	private TaskService taskService;
+    private TaskService taskService;
 
-	@Autowired
-	public TaskController(TaskService taskService) {
-		this.taskService = taskService;
-	}
-	
-	@PostMapping(path = "/tasks", consumes = "application/json")
-	public ResponseEntity<String> addTask(@RequestBody Task task) {
+    @Autowired
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
+    }
 
-		taskService.addUpdateTask(task);
-		return new ResponseEntity<String>(HttpStatus.OK);
-	}
+    @PostMapping(path = "/tasks", consumes = "application/json")
+    public ResponseEntity<String> addTask(@RequestBody Task task) {
 
-	@PutMapping("/tasks")
-	public ResponseEntity<String> updateTask(@RequestBody Task task) {		
+        try {
+            taskService.addUpdateTask(task);
+        } catch (Exception e) {
+            throw new AppException();
+        }
 
-		taskService.addUpdateTask(task);
-		return new ResponseEntity<String>(HttpStatus.OK);
-	}
+        return new ResponseEntity<String>(HttpStatus.OK);
+    }
 
-	@DeleteMapping(path="/tasks/{taskId}")
-	public ResponseEntity<String> deleteTask(@PathVariable("taskId") int taskId) {
+    @PutMapping("/tasks")
+    public ResponseEntity<String> updateTask(@RequestBody Task task) {
 
-		taskService.deleteTask(taskId);
-		return new ResponseEntity<String>(HttpStatus.OK);
-	}
+        try {
+            taskService.addUpdateTask(task);
+        } catch (Exception e) {
+            throw new AppException();
+        }
 
-	@GetMapping("/tasks")
-	public ResponseEntity<List> getAllTask() {
-		
-		List<TaskTbl> taskList = taskService.getTask();
-		System.out.println("**TaskList***"+taskList.size());
-		
-		return new ResponseEntity<List>(taskList, HttpStatus.OK);
-	}
+        return new ResponseEntity<String>(HttpStatus.OK);
+    }
 
-	@GetMapping("/tasks/parenttasks")
-	public ResponseEntity<List> getAllParentTask() {
+    @DeleteMapping(path = "/tasks/{taskId}")
+    public ResponseEntity<String> deleteTask(@PathVariable("taskId") int taskId) {
 
-		List<ParentTaskTbl> parentTaskList = taskService.getParentTask();
-		System.out.println("**ParentTaskList***"+parentTaskList.size());
+        try {
+            taskService.deleteTask(taskId);
+        } catch (Exception e) {
+            throw new AppException();
+        }
 
-		return new ResponseEntity<List>(parentTaskList, HttpStatus.OK);
-	}
+        return new ResponseEntity<String>(HttpStatus.OK);
+    }
 
-	@GetMapping("/tasks/count/{projectId}")
-	public ResponseEntity<Integer> getTaskCount(@PathVariable("projectId") long projectId) {
-		int taskCount = taskService.countTask(projectId);
-		System.out.println("**taskCount***"+taskCount);
+    @GetMapping("/tasks")
+    public ResponseEntity<List> getAllTask() {
+        List<TaskTbl> taskList = null;
+        try {
+            taskList = taskService.getTask();
+        } catch (Exception e) {
+            throw new AppException();
+        }
 
-		return new ResponseEntity<Integer>(Integer.valueOf(taskCount), HttpStatus.OK);
-	}
+        return new ResponseEntity<List>(taskList, HttpStatus.OK);
+    }
 
-	@GetMapping("/tasks/complete")
-	public ResponseEntity<Integer> getCompleteTaskCount() {
-		int taskCount = taskService.countCompleteTask("Complete");
-		System.out.println("**taskCount***"+taskCount);
+    @GetMapping("/tasks/parenttasks")
+    public ResponseEntity<List> getAllParentTask() {
+        List<ParentTaskTbl> parentTaskList = null;
 
-		return new ResponseEntity<Integer>(Integer.valueOf(taskCount), HttpStatus.OK);
-	}
+        try {
+            parentTaskList = taskService.getParentTask();
 
-	@GetMapping("/tasks/sort/{sortString}")
-	public ResponseEntity<List> sortTask(@PathVariable("sortString") String sortString) {
+            if (parentTaskList.size() == 0) {
+                throw new ParentTaskNotFoundException();
+            }
+        } catch (Exception e) {
+            throw new AppException();
+        }
 
-		List<TaskTbl> taskList = taskService.sortTask(sortString);
+        return new ResponseEntity<List>(parentTaskList, HttpStatus.OK);
+    }
 
-		return new ResponseEntity<List>(taskList, HttpStatus.OK);
-	}
-	
-	@GetMapping("/tasks/{taskId}")
-	public ResponseEntity<Task> getTask(@PathVariable("taskId") int taskId) {
-		
-		TaskTbl task = taskService.getTaskById(taskId);
-		System.out.println("**Task***"+task);
-		Task taskObj = new Task();
-		if (task != null) {
-			taskObj.setTaskId(task.getTaskId());
-			taskObj.setTask(task.getTask());
-			taskObj.setParentTaskId(task.getParentTaskTbl().getParentTaskId());
-			taskObj.setParentTask(task.getParentTaskTbl().getParentTask());
-			taskObj.setPriority(task.getPriority());
-			taskObj.setStartDate(task.getStartDate().toString());
-			taskObj.setEndDate(task.getEndDate().toString());
-			taskObj.setManager(task.getUserTbl().getLastName()+","+task.getUserTbl().getFirstName());
-			taskObj.setManagerId(task.getUserTbl().getUserId());
-			taskObj.setProject(task.getProjectTbl().getProjectName());
-			taskObj.setProjectId(task.getProjectTbl().getProjectId());
-		}		
-		
-		return new ResponseEntity<Task>(taskObj, HttpStatus.OK);
-	}
+    @GetMapping("/tasks/count/{projectId}")
+    public ResponseEntity<Integer> getTaskCount(@PathVariable("projectId") long projectId) {
+        int taskCount = 0;
+        try {
+            taskCount = taskService.countTask(projectId);
+        } catch (Exception e) {
+            throw new AppException();
+        }
 
-	@GetMapping("/tasks/project/{projectId}")
-	public ResponseEntity<List> getTaskByProjectId(@PathVariable("projectId") long projectId) {
+        return new ResponseEntity<Integer>(Integer.valueOf(taskCount), HttpStatus.OK);
+    }
 
-		List<TaskTbl> taskList = taskService.getTaskByProjectId(projectId);
-		System.out.println("**TaskList***"+taskList.size());
+    @GetMapping("/tasks/complete")
+    public ResponseEntity<Integer> getCompleteTaskCount() {
+        int taskCount = 0;
 
-		return new ResponseEntity<List>(taskList, HttpStatus.OK);
-	}
+        try {
+            taskCount = taskService.countCompleteTask("Complete");
+        } catch (Exception e) {
+            throw new AppException();
+        }
+
+        return new ResponseEntity<Integer>(Integer.valueOf(taskCount), HttpStatus.OK);
+    }
+
+    @GetMapping("/tasks/sort/{sortString}")
+    public ResponseEntity<List> sortTask(@PathVariable("sortString") String sortString) {
+        List<TaskTbl> taskList = null;
+
+        try {
+            taskList = taskService.sortTask(sortString);
+        } catch (Exception e) {
+            throw new AppException();
+        }
+
+        return new ResponseEntity<List>(taskList, HttpStatus.OK);
+    }
+
+    @GetMapping("/tasks/{taskId}")
+    public ResponseEntity<Task> getTask(@PathVariable("taskId") int taskId) {
+        TaskTbl task = null;
+        try {
+            task = taskService.getTaskById(taskId);
+        } catch (Exception e) {
+            throw new AppException();
+        }
+
+        Task taskObj = new Task();
+        if (task != null) {
+            taskObj.setTaskId(task.getTaskId());
+            taskObj.setTask(task.getTask());
+            taskObj.setParentTaskId(task.getParentTaskTbl().getParentTaskId());
+            taskObj.setParentTask(task.getParentTaskTbl().getParentTask());
+            taskObj.setPriority(task.getPriority());
+            taskObj.setStartDate(task.getStartDate().toString());
+            taskObj.setEndDate(task.getEndDate().toString());
+            taskObj.setManager(task.getUserTbl().getLastName() + "," + task.getUserTbl().getFirstName());
+            taskObj.setManagerId(task.getUserTbl().getUserId());
+            taskObj.setProject(task.getProjectTbl().getProjectName());
+            taskObj.setProjectId(task.getProjectTbl().getProjectId());
+        }
+
+        return new ResponseEntity<Task>(taskObj, HttpStatus.OK);
+    }
+
+    @GetMapping("/tasks/project/{projectId}")
+    public ResponseEntity<List> getTaskByProjectId(@PathVariable("projectId") long projectId) {
+        List<TaskTbl> taskList = null;
+
+        try {
+            taskList = taskService.getTaskByProjectId(projectId);
+        } catch (Exception e) {
+            throw new AppException();
+        }
+
+        return new ResponseEntity<List>(taskList, HttpStatus.OK);
+    }
 }

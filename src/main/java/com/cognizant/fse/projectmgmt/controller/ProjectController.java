@@ -1,5 +1,6 @@
 package com.cognizant.fse.projectmgmt.controller;
 
+import com.cognizant.fse.projectmgmt.exception.AppException;
 import com.cognizant.fse.projectmgmt.model.ProjectTbl;
 import com.cognizant.fse.projectmgmt.model.UserTbl;
 import com.cognizant.fse.projectmgmt.service.ProjectService;
@@ -35,47 +36,72 @@ public class ProjectController {
 	@PostMapping(path = "/projects", consumes = "application/json")
 	public ResponseEntity<String> addProject(@RequestBody Project project) {
 
-		projectService.addUpdateProject(project);
+		try {
+			projectService.addUpdateProject(project);
+		} catch (Exception e) {
+			throw new AppException();
+		}
+
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 
 	@PutMapping(path = "/projects", consumes = "application/json")
 	public ResponseEntity<String> updateProject(@RequestBody Project project) {
+		try {
+			projectService.addUpdateProject(project);
+		} catch (Exception e) {
+			throw new AppException();
+		}
 
-		projectService.addUpdateProject(project);
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 
 	@DeleteMapping(path="/projects/{projectId}")
 	public ResponseEntity<String> deleteProject(@PathVariable("projectId") int projectId) {
+		try {
+			projectService.deleteProject(projectId);
+		} catch (Exception e) {
+			throw new AppException();
+		}
 
-		projectService.deleteProject(projectId);
 		return new ResponseEntity<String>(HttpStatus.OK);
 	}
 
 	@GetMapping("/projects")
 	public ResponseEntity<List> getProjects() {
-		
-		List<ProjectTbl> projectList = projectService.getProject();
-		List<Project> projectObjList = transformData(projectList);
+		List<Project> projectObjList = null;
+		try {
+			List<ProjectTbl> projectList = projectService.getProject();
+			projectObjList = transformData(projectList);
+		} catch (Exception e) {
+			throw new AppException();
+		}
 
 		return new ResponseEntity<List>(projectObjList, HttpStatus.OK);
 	}
 
 	@GetMapping("/projects/search/{search}")
 	public ResponseEntity<List> searchProject(@PathVariable("search") String searchString) {
-
-		List<ProjectTbl> projectList = projectService.findProject(searchString);
-		List<Project> projectObjList = transformData(projectList);
+		List<Project> projectObjList = null;
+		try {
+			List<ProjectTbl> projectList = projectService.findProject(searchString);
+			projectObjList = transformData(projectList);
+		} catch (Exception e) {
+			throw new AppException();
+		}
 
 		return new ResponseEntity<List>(projectObjList, HttpStatus.OK);
 	}
 
 	@GetMapping("/projects/sort/{sortString}")
 	public ResponseEntity<List> sortProject(@PathVariable("sortString") String sortString) {
-
-		List<ProjectTbl> projectList = projectService.sortProject(sortString);
-		List<Project> projectObjList = transformData(projectList);
+		List<Project> projectObjList = null;
+		try {
+			List<ProjectTbl> projectList = projectService.sortProject(sortString);
+			projectObjList = transformData(projectList);
+		} catch (Exception e) {
+			throw new AppException();
+		}
 
 		return new ResponseEntity<List>(projectObjList, HttpStatus.OK);
 	}

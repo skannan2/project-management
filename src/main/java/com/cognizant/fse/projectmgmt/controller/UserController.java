@@ -1,5 +1,7 @@
 package com.cognizant.fse.projectmgmt.controller;
 
+import com.cognizant.fse.projectmgmt.exception.AppException;
+import com.cognizant.fse.projectmgmt.exception.UserNotFoundException;
 import com.cognizant.fse.projectmgmt.model.UserTbl;
 import com.cognizant.fse.projectmgmt.service.UserService;
 import com.cognizant.fse.projectmgmt.vo.User;
@@ -19,56 +21,85 @@ import java.util.List;
 @RequestMapping("/project-management")
 public class UserController {
 
-	private UserService userService;
+    private UserService userService;
 
-	@Autowired
-	public UserController(UserService userService) {
-		this.userService = userService;
-	}
+    @Autowired
+    public UserController(UserService userService) {
+        this.userService = userService;
+    }
 
-	
-	@PostMapping(path = "/users", consumes = "application/json")
-	public ResponseEntity<String> addUser(@RequestBody User user) {
 
-		userService.addUpdateUser(user);
-		return new ResponseEntity<String>(HttpStatus.OK);
-	}
+    @PostMapping(path = "/users", consumes = "application/json")
+    public ResponseEntity<String> addUser(@RequestBody User user) {
+        try {
+            userService.addUpdateUser(user);
+        } catch (Exception e) {
+            throw new AppException();
+        }
+        return new ResponseEntity<String>(HttpStatus.OK);
+    }
 
-	@PutMapping(path="/users", consumes = "application/json")
-	public ResponseEntity<String> updateUser(@RequestBody User user) {
+    @PutMapping(path = "/users", consumes = "application/json")
+    public ResponseEntity<String> updateUser(@RequestBody User user) {
 
-		userService.addUpdateUser(user);
-		return new ResponseEntity<String>(HttpStatus.OK);
-	}
+        try {
+            userService.addUpdateUser(user);
+        } catch (Exception e) {
+            throw new AppException();
+        }
+        return new ResponseEntity<String>(HttpStatus.OK);
+    }
 
-	@DeleteMapping(path="/users/{userId}")
-	public ResponseEntity<String> deleteUser(@PathVariable("userId") long userId) {
+    @DeleteMapping(path = "/users/{userId}")
+    public ResponseEntity<String> deleteUser(@PathVariable("userId") long userId) {
 
-		userService.deleteUser(userId);
-		return new ResponseEntity<String>(HttpStatus.OK);
-	}
+        try {
+            userService.deleteUser(userId);
+        } catch (Exception e) {
+            throw new AppException();
+        }
+        return new ResponseEntity<String>(HttpStatus.OK);
+    }
 
-	@GetMapping("/users")
-	public ResponseEntity<List> getUsers() {
-		
-		List<UserTbl> userList = userService.getUser();
-		
-		return new ResponseEntity<List>(userList, HttpStatus.OK);
-	}
-	
-	@GetMapping("/users/search/{search}")
-	public ResponseEntity<List> searchUser(@PathVariable("search") String searchString) {
+    @GetMapping("/users")
+    public ResponseEntity<List> getUsers() {
+        List<UserTbl> userList = null;
+        try {
+            userList = userService.getUser();
+        } catch (Exception e) {
+            throw new AppException();
+        }
 
-		List<UserTbl> userList = userService.findUser(searchString);
+        return new ResponseEntity<List>(userList, HttpStatus.OK);
+    }
 
-		return new ResponseEntity<List>(userList, HttpStatus.OK);
-	}
+    @GetMapping("/users/search/{search}")
+    public ResponseEntity<List> searchUser(@PathVariable("search") String searchString) {
+        List<UserTbl> userList = null;
 
-	@GetMapping("/users/sort/{sortString}")
-	public ResponseEntity<List> sortUser(@PathVariable("sortString") String sortString) {
+        try {
+            userList = userService.findUser(searchString);
 
-		List<UserTbl> userList = userService.sortUser(sortString);
+            if (userList.size() == 0) {
+                throw new UserNotFoundException(searchString);
+            }
+        } catch (Exception e) {
+            throw new AppException();
+        }
 
-		return new ResponseEntity<List>(userList, HttpStatus.OK);
-	}
+        return new ResponseEntity<List>(userList, HttpStatus.OK);
+    }
+
+    @GetMapping("/users/sort/{sortString}")
+    public ResponseEntity<List> sortUser(@PathVariable("sortString") String sortString) {
+        List<UserTbl> userList = null;
+
+        try {
+            userList = userService.sortUser(sortString);
+        } catch (Exception e) {
+            throw new AppException();
+        }
+
+        return new ResponseEntity<List>(userList, HttpStatus.OK);
+    }
 }
